@@ -1,0 +1,112 @@
+
+\documentclass[12pt,draft]{article}
+\usepackage{hyperref}
+\pagenumbering{arabic}
+\begin {document}
+
+\title {AirSync}
+\author {Robert Durham}
+\date {April 15, 2012}
+\maketitle
+
+\section{Introduction}
+Many portable devices have become a part of our everyday lives impacting work as well as our home lives and the way we travel. Most of these devices have their own unique means of transferring media and documents. All of these devices can access the internet via some means, e.g. WiFi or cellular network. I will use my situation as an example, between myself and my wife we have at least eight different devices that we like to access music libraries, documents, photos and videos from:
+
+\footnotesize
+\begin{center}
+\begin{tabular}{|l|l|l|}
+\hline
+	\textbf{Device} & \textbf{Description} & \textbf{Connectivity}\\
+\hline
+	Desktop PC & Linux & Wired(Home)\\
+\hline 
+	Home Theater PC & Linux & Wired(Home)\\
+\hline
+	Laptop(Mine) & Windows 7/Linux & WiFi\\
+\hline
+	Laptop(Spouse) & Windows XP & WiFi\\
+\hline
+	Motorola Droid 3(Mine) & Android 4 Phone & 3G \& WiFi\\
+\hline
+	Motorola Droid 3(Spouse) & Android 2.3 Phone & 3G \& WiFi\\
+\hline
+	Asus Transformer & Android 4 Tablet & WiFi\\
+\hline
+	Kindle Fire & E-Reader/Tablet (Android 2.3 based) & WiFi\\
+\hline
+	Ipod Touch & Apple IOS $3^{rd}$ Gen & WiFi\\
+
+\hline
+\end{tabular}
+\end{center}
+\normalsize
+Several `Cloud' services have offered means to maintain and provide access to media and documents via the internet, e.g. Apple iCloud, DropBox, Asus WebStorage, Ubuntu One. All of these have limited storage, cost money to expand that storage, and don't support all necessary devices. These issues are outside of the fact that these require trusting your personal data to a $3^{rd}$ party. DropBox and Ubuntu One support almost all of these devices, but transferring large media files through internet is slow. What if there were a solution to easily synchronize media/files through your home network, yet still allow access to these files through the internet without relying on the privacy policy of a $3^{rd}$ party provider? Some open source solutions can help in desktop/laptop situations, but not with mobile devices.
+
+\section{Goal}
+
+The goal of this project is to provide a means to easily synchronize files between multiple types without relying on $3^{rd}$ party services to protect sensitive data. In order provide a replacement option for services like dropbox, AirSync must provide a means to access files remotely through the internet.
+
+\section {Use Cases}
+
+Their are three types of devices and two types of connections used to depict each of the use cases.  The three types of devices are static PC, mobile PC and mobile device.  The two types of connections are local and internet connected. A localized connection refers to the situation where the devices do not need to utilize internet bandwidth to transfer data.  Local connections are typically at least 54 mb/s where as most internet connections in 2010 averaged 3.7 mb/s\footnote{http://arstechnica.com/telecom/news/2010/01/us-broadband-still-lagging-in-speed-and-penetration.ars}. 54 mb/s is the theoretical limit of 802.11g wireless networking protocol. Hotels have notoriously slow internet connections.
+
+\begin{enumerate}
+\item Synchronize files between server and devices on local network
+\item Manage Android file system from static or mobile PC on local network
+\item Download/Upload files between server and Android Device or Mobile PC via internet connection
+\end{enumerate}
+
+\section{Design}
+
+AirSync will provide the means to synchronize files between any Windows, Linux and Android devices. It will include the following three software components: 
+\normalsize
+\begin{center}
+\begin{tabular}{|l|p{7.5cm}|}
+\hline
+	\textbf{Component} & \textbf{Description} \\
+\hline
+	Service 
+	& Runs as system service or daemon on server and client PCs. Acts as Server and/or Client depending configuration. \emph{A client needs to be capable of becoming a server\ldots} \\
+\hline 
+	Service Configuration UI & Graphical User Interface that will monitor status and change settings with AirSync Service on PCs. Will also provide remote management of files on Android devices.\\
+\hline
+	Android Client Application & Activity App that will provide the user with a choice of two operating modes. One mode will allow remote management of the android devices memory space from the Service Configuration UI. The second mode will allow the Android user to browse the files available from the server and select files to download.\\
+\hline
+\end{tabular}
+\end{center}
+\normalsize
+All application components will be developed in Java to maximize code re-usability and portability between platforms. \emph{Android}\footnote{http://www.android.com/developers/} is essentially any embedded Linux environment with a specialized Java Virtual Machine. If Android specific code sections are properly abstracted into separate Java Classes, the large majority of the android client code will be re-usable with the PC application. The Integrated Development Environment (IDE) will be \emph{Eclipse}\footnote{http://eclipse.org/} with the Android Developer Tools(ADT) addons. \emph{Git}\footnote{http://git-scm.com/} will be used for source versioning control with the git server being hosted on \emph{assembla.com}\footnote{http://www.assembla.com/}. This project will not include the development of an AirSync application for \emph{Apple IOS}\footnote{https://developer.apple.com/devcenter/ios/index.action}. The development environment for IOS only supports Mac OS X. The IOS development language is a managed C++, much of the code would need to be ported and I do not have access to a Mac, so I have exclude support, for now.
+
+\subsection{Service Design}
+
+\begin{itemize}
+\item Server side component, provides remote access to files based on system configuration
+\item Tracks initialized devices and associated unique ids / shared keys
+\item Symmetric key encryption
+\item Use XML configuration files
+\item Communicate transfer logs and status / take commands from Configuration UI over loopback socket
+\item Needs to be able to act as a client in order to automatically sync on laptops when connected over local network
+\end{itemize}
+
+\subsection{Service Configuration UI Design}
+
+\begin{itemize}
+\item Graphical interface to service for configuration and status monitoring
+\item Enable access to certain files and folders.  Potentially on a per device basis(Access Restrictions).
+\item Log remote transfers
+\item Manage security settings
+\end{itemize}
+
+\subsection{Android Client Application Design}
+
+\begin{itemize}
+\item Provide client file synchronization with service
+\item Allow remote file selection for download 
+	\begin{itemize}
+	\item when not on localized network
+	\item user selectable
+	\end {itemize}
+\item Provide remote file system management to service
+\end{itemize}
+
+\end{document}
