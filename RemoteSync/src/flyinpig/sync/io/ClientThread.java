@@ -82,13 +82,6 @@ public class ClientThread extends Thread {
 				}
 			}
 		}
-		
-		
-		
-				
-		
-
-		
 	}
 	
 	private void initInfo(OutputStream out) throws IOException

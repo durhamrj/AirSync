@@ -1,19 +1,20 @@
 package flyinpig.sync;
 
-import java.io.IOException;
-import java.net.Socket;
-import java.net.UnknownHostException;
-
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.os.Bundle;
-import android.view.View;
-import android.view.View.OnClickListener;
+import android.os.Handler;
+import android.util.Log;
 import android.widget.Button;
-import android.widget.EditText;
+import flyinpig.sync.io.ClientThread;
 
 public class RemoteSyncActivity extends Activity {
 	
+	private UIListener mGetListener = null;
+	public static String tag = "RemoteSync";
 	ClientThread mClientThread;
+	Handler mHandler;
+	String alertMessage;
 	
 	static RemoteSyncActivity _singleton = null;
 	
@@ -23,64 +24,55 @@ public class RemoteSyncActivity extends Activity {
         super.onCreate(savedInstanceState);
         
         _singleton = this;
+        mGetListener = new UIListener();
+        mHandler = new Handler();
+      
+        setContentView(R.layout.main);        
         
         Button connectButton = (Button)findViewById(R.id.btnConnect);
         
         connectButton.setOnClickListener(mGetListener);
         
-        setContentView(R.layout.main);        
+        alertMessage = "Test Alert";
+        
+        // alert test
+        AlertDialog.Builder alert = new AlertDialog.Builder(_singleton);
+    	alert.setMessage(_singleton.alertMessage);
+    	AlertDialog dialog = alert.create();
+    	if( dialog != null ){
+    		dialog.show();
+    	}
     }
     
-    protected void connect( String ip_hostname, int port )
+    @Override
+    public void onSaveInstanceState(Bundle savedInstanceState)
     {
-    	try {
-			Socket mClientSocket = new Socket(ip_hostname, port);
-			
-			mClientThread = new ClientThread(mClientSocket);
-			
-		} catch (UnknownHostException e) {
-			System.err.println(e.getMessage());
-			e.printStackTrace();
-		} catch (IOException e) {
-			System.err.println(e.getMessage());
-			e.printStackTrace();
-		}
+    	Log.v(tag, "onSaveInstanceState Called...\n");
     }
     
-    private OnClickListener mGetListener = new OnClickListener() {
-        public void onClick(View v) {
-           if( v == null )
-           {
-        	   return;
-           }
-           
-           if( v.getId() == R.id.btnConnect )
-           {
-        	   if( ((Button)v).getText().equals("Connect") )
-        	   {
-	        	   // Try to connect to remote server
-	        	   String ip_host = ((EditText)findViewById(R.id.editIPText)).getText().toString();
-	        	   String sPort = ((EditText)findViewById(R.id.editPortText)).getText().toString();
-	        	   
-	        	   try
-	        	   {
-	        		   int nPort = Integer.parseInt(sPort);
-	        		   
-	        		   RemoteSyncActivity._singleton.connect(ip_host,nPort);
-	        		   
-	        		   ((Button)v).setText("Disconnect");
-	        	   }
-	        	   catch( NumberFormatException e )
-	        	   {
-	        		   //PopUpWindow
-	        		   System.err.println("Port value must be a number!");
-	        	   }
-        	   }
-        	   else if( ((Button)v).getText().equals("Disconnect") )
-        	   {
-        		   
-        	   }
-           }
-        }
-    };
+    
+    public static void showErrorMessage(String message){
+    	Log.e(RemoteSyncActivity.tag,message);
+    	_singleton.alertMessage = message;
+    	_singleton.mHandler.post(new Runnable(){
+    	    public void run(){
+    	    	AlertDialog.Builder alert = new AlertDialog.Builder(_singleton);
+    	    	alert.setMessage(_singleton.alertMessage);
+    	    	AlertDialog dialog = alert.create();
+    	    	if( dialog != null ){
+    	    		dialog.show();
+    	    	}
+    	    }
+    	});	
+    }
+
+	public static void connectionLost(String message) {
+		showErrorMessage(message);
+		Button btnConnect = (Button)_singleton.findViewById(R.id.btnConnect);
+		if( btnConnect != null )
+		{
+			btnConnect.setText("Establish\nConnection");
+		}
+	}
+    
 }
