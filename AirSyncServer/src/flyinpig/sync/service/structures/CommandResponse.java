@@ -1,8 +1,9 @@
-package flyinpig.sync.service;
+package flyinpig.sync.service.structures;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
+
 
 public class CommandResponse {
 

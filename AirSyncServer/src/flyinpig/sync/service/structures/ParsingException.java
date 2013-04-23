@@ -1,4 +1,4 @@
-package flyinpig.sync.service;
+package flyinpig.sync.service.structures;
 
 public class ParsingException extends Exception {
 
