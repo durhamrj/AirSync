@@ -26,16 +26,13 @@ Many portable devices have become a part of our everyday lives impacting work as
 \hline
 	Laptop(Spouse) & Windows XP & WiFi\\
 \hline
-	Motorola Droid 3(Mine) & Android 4 Phone & 3G \& WiFi\\
+	Motorola Droid 4(Mine) & Android 4 Phone & 4G \& WiFi\\
 \hline
 	Motorola Droid 3(Spouse) & Android 2.3 Phone & 3G \& WiFi\\
 \hline
-	Asus Transformer & Android 4 Tablet & WiFi\\
+	Nexus 7 & Android 4 Tablet & WiFi\\
 \hline
-	Kindle Fire & E-Reader/Tablet (Android 2.3 based) & WiFi\\
-\hline
-	Ipod Touch & Apple IOS $3^{rd}$ Gen & WiFi\\
-
+	Kindle Fire HD & E-Reader/Tablet (Android 4 based) & WiFi\\
 \hline
 \end{tabular}
 \end{center}
@@ -81,11 +78,9 @@ All application components will be developed in Java to maximize code re-usabili
 
 \begin{itemize}
 \item Server side component, provides remote access to files based on system configuration
-\item Tracks initialized devices and associated unique ids / shared keys
-\item Symmetric key encryption
+\item Tracks initialized devices and associated unique ids
 \item Use XML configuration files
-\item Communicate transfer logs and status / take commands from Configuration UI over loopback socket
-\item Needs to be able to act as a client in order to automatically sync on laptops when connected over local network
+\item Communicate transfer logs and status 
 \end{itemize}
 
 \subsection{Service Configuration UI Design}
@@ -94,7 +89,6 @@ All application components will be developed in Java to maximize code re-usabili
 \item Graphical interface to service for configuration and status monitoring
 \item Enable access to certain files and folders.  Potentially on a per device basis(Access Restrictions).
 \item Log remote transfers
-\item Manage security settings
 \end{itemize}
 
 \subsection{Android Client Application Design}
