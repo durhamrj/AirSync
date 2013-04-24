@@ -2,6 +2,7 @@ package flyinpig.sync.io;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.InetAddress;
@@ -20,6 +21,7 @@ public class ClientThread extends Thread {
 	Integer port = null;
 	BufferedOutputStream bos = null;
 	BufferedInputStream bis = null;
+	BufferedReader br = null;
 	
 	public ClientThread()
 	{
@@ -67,6 +69,7 @@ public class ClientThread extends Thread {
 				
 				// check for commands
 				try {
+					
 					bis = new BufferedInputStream(mClientSocket.getInputStream());
 				
 					int numread = 0;
