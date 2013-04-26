@@ -23,6 +23,8 @@ public class CommandHandler extends Thread {
 			Main.deregister(this);
 			return;
 		}
+		
+		
 	}
 
 }
