@@ -1,16 +1,15 @@
 package flyinpig.sync.io;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.BufferedReader;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.Enumeration;
 
+import flyinpig.sync.CommandExecutor;
 import flyinpig.sync.RemoteSyncActivity;
 
 public class ClientThread extends Thread {
@@ -19,9 +18,8 @@ public class ClientThread extends Thread {
 	boolean stayConnected = false;
 	String iphostname = null;
 	Integer port = null;
-	BufferedOutputStream bos = null;
-	BufferedInputStream bis = null;
-	BufferedReader br = null;
+	DataOutputStream dos = null;
+	DataInputStream dis = null;
 	
 	public ClientThread()
 	{
@@ -58,10 +56,10 @@ public class ClientThread extends Thread {
 				}
 	    		
 				try {
-					if( bos != null )
-						bos.close();
-					bos = new BufferedOutputStream(mClientSocket.getOutputStream());
-					initInfo(bos);
+					if( dos != null )
+						dos.close();
+					dos = new DataOutputStream(mClientSocket.getOutputStream());
+					initInfo();
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
@@ -70,67 +68,92 @@ public class ClientThread extends Thread {
 				// check for commands
 				try {
 					
-					bis = new BufferedInputStream(mClientSocket.getInputStream());
+					dis = new DataInputStream(mClientSocket.getInputStream());
 				
-					int numread = 0;
-					byte[] buf = new byte[4096];
-					while( mClientSocket.isConnected() ) 
+					int messageLength = dis.readInt();
+					byte[] message = new byte[messageLength];
+					if( dis.read(message) == messageLength) 
 					{
-						numread = bis.read(buf);
-						System.out.print(new String(buf,0,numread));
+						CommandResponse response = CommandExecutor.execute(new CommandResponse(message));
+						send(response);
 					}
+					
 				} catch (IOException e) {
 					stayConnected = false;
+					RemoteSyncActivity.showErrorMessage(e.getMessage());
+				} catch (ParsingException e){
+					CommandResponse parsefailure = new CommandResponse(CommandResponse.COMMAND_TYPE_FAILURE);
+					parsefailure.addParameter("Command parsing failure.");
 					RemoteSyncActivity.showErrorMessage(e.getMessage());
 				}
 			}
 		}
 	}
 	
-	private void initInfo(OutputStream out) throws IOException
+	private void initInfo() throws IOException
 	{
 		// Dump Some Device Configuration Info
 		byte[] endline = "\n".getBytes();
-		out.write("DEVICE INFO:\n".getBytes());
-		out.write(android.os.Build.BRAND.getBytes());
-		out.write(endline);
-		out.write(android.os.Build.DEVICE.getBytes());
-		out.write(endline);
-		out.write(android.os.Build.DISPLAY.getBytes());
-		out.write(endline);
-		out.write(android.os.Build.MANUFACTURER.getBytes());
-		out.write(endline);
-		out.write(android.os.Build.MODEL.getBytes());
-		out.write(endline);
-		out.write(android.os.Build.PRODUCT.getBytes());
-		out.write(endline);
-		out.write(android.os.Build.USER.getBytes());
-		out.write(endline);
+		dos.writeChars("DEVICE INFO:\n");
+		dos.writeChars(android.os.Build.BRAND);
+		dos.write(endline);
+		dos.writeChars(android.os.Build.DEVICE);
+		dos.write(endline);
+		dos.writeChars(android.os.Build.DISPLAY);
+		dos.write(endline);
+		dos.writeChars(android.os.Build.MANUFACTURER);
+		dos.write(endline);
+		dos.writeChars(android.os.Build.MODEL);
+		dos.write(endline);
+		dos.writeChars(android.os.Build.PRODUCT);
+		dos.write(endline);
+		dos.writeChars(android.os.Build.USER);
+		dos.write(endline);
 		
-		out.write("NETWORK INFO:\n".getBytes());
+		dos.writeChars("NETWORK INFO:\n");
 		Enumeration<NetworkInterface> netI =  NetworkInterface.getNetworkInterfaces();
 		if( !netI.hasMoreElements())
 		{
-			out.write("0 Network Interfaces\n".getBytes());
+			dos.writeChars("0 Network Interfaces\n");
 		}
 		while( netI.hasMoreElements() )
 		{
 			NetworkInterface iface = netI.nextElement();
 			if( !iface.isLoopback() && iface.isUp() )
 			{
-				out.write(endline);
-				out.write(iface.getDisplayName().getBytes());
-				out.write(endline);
+				dos.write(endline);
+				dos.writeChars(iface.getDisplayName());
+				dos.write(endline);
 				Enumeration<InetAddress> addrs = iface.getInetAddresses();
 				while( addrs.hasMoreElements() )
 				{
-					out.write(addrs.nextElement().getHostAddress().getBytes());
+					dos.writeChars(addrs.nextElement().getHostAddress());
 				}
-				out.write(endline);
+				dos.write(endline);
 			}						
 		}
-		out.write(endline);
-		out.flush();
+		dos.write(endline);
+		dos.flush();
+	}
+	
+	public void send( CommandResponse cr )
+	{
+		byte[] message = cr.toByteArray();
+		
+		try {
+			dos.writeInt(message.length);
+			dos.write(message);
+		} catch (IOException e) {
+			
+			// check connection status
+			if( mClientSocket.isClosed() )
+			{
+				stayConnected = false;
+				RemoteSyncActivity.connectionLost(e.getMessage());
+			}else{
+				RemoteSyncActivity.showErrorMessage(e.getMessage());
+			}
+		}
 	}
 	
 	public void connect( String ip_hostname, int port )
@@ -150,6 +173,7 @@ public class ClientThread extends Thread {
 	
 	public void disconnect()
 	{
+		stayConnected = false;
 		if( mClientSocket != null )
 		{
 			try {
@@ -160,6 +184,7 @@ public class ClientThread extends Thread {
 				return;
 			}
 		}
+		mClientSocket = null;
 		
 	}
 

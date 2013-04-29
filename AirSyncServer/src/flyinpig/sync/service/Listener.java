@@ -52,7 +52,10 @@ public class Listener extends Thread {
 			Socket sock;
 			try {
 				sock = servsock.accept();
-				new CommandHandler(sock).start();
+				CommandHandler tmp = new CommandHandler(sock);
+				Main.register(tmp);
+				tmp.start();
+				
 			} catch (IOException e) {
 				System.err.println("Listener: " + e.getMessage());
 				continue;
