@@ -30,18 +30,9 @@ public class RemoteSyncActivity extends Activity {
         setContentView(R.layout.main);        
         
         Button connectButton = (Button)findViewById(R.id.btnConnect);
-        
         connectButton.setOnClickListener(mGetListener);
-        
-        alertMessage = "Test Alert";
-        
-        // alert test
-        AlertDialog.Builder alert = new AlertDialog.Builder(_singleton);
-    	alert.setMessage(_singleton.alertMessage);
-    	AlertDialog dialog = alert.create();
-    	if( dialog != null ){
-    		dialog.show();
-    	}
+        Button disconnectButton = (Button)findViewById(R.id.btndisconnect);
+        disconnectButton.setOnClickListener(mGetListener);       
     }
     
     @Override
@@ -71,8 +62,9 @@ public class RemoteSyncActivity extends Activity {
 		Button btnConnect = (Button)_singleton.findViewById(R.id.btnConnect);
 		if( btnConnect != null )
 		{
-			btnConnect.setText("Establish\nConnection");
+			btnConnect.setText("Establish Connection");
 		}
+		_singleton.setContentView(R.layout.main);
 	}
     
 }

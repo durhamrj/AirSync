@@ -4,7 +4,6 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
-
 public class CommandResponse {
 
 	// internal variables
@@ -16,9 +15,12 @@ public class CommandResponse {
 	
 	// COMMAND TYPES - RESPONSES to and command will be 
 	public final static int COMMAND_TYPE_RESPONSE = 400;
+	public final static int COMMAND_TYPE_FAILURE = 1000;
 	public final static int COMMAND_TYPE_QUIT = 0;
 	public final static int COMMAND_TYPE_DIRLIST = 1;
-		
+	public final static int COMMAND_TYPE_REQUEST_FILE = 2;
+	public final static int COMMAND_TYPE_PUSH_FILE = 3;
+	public final static int COMMAND_TYPE_FILE_PIECE = 4;
 	
 	public CommandResponse(int command_type)
 	{
@@ -154,6 +156,41 @@ public class CommandResponse {
 		return true;
 	}
 	
+	public int getCommandType() {
+		return commandtype;
+	}
+	
+	public int getCommandid() {
+		return commandid;
+	}
+
+	public void setCommandid(int commandid) {
+		this.commandid = commandid;
+	}
+
+	public List<String> getParameters() {
+		return parameters;
+	}
+	
+	@Override
+	public String toString()
+	{
+		StringBuffer sb = new StringBuffer("ID: ");
+		sb.append(commandid);
+		sb.append("\nTYPE: ");
+		sb.append(commandtype);
+		sb.append("\n");
+		for( int i = 0; i < parameters.size(); i++ )
+		{
+			sb.append("param[");
+			sb.append(i);
+			sb.append("] = ");
+			sb.append(parameters.get(i));
+			sb.append("\n");
+		}
+		return null;
+	}
+
 	public static void main(String[] args)
 	{
 		String test1 = "Test1llllalksdfjlaj;sdflkjajsdlkfjlsajd;fljslkajdfjs;lkajfl;saj;jlfsdlkjasjdflksjlkfs";
@@ -183,4 +220,5 @@ public class CommandResponse {
 			e.printStackTrace();
 		}		
 	}
+
 }

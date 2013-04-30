@@ -52,7 +52,7 @@ public class UIListener implements OnClickListener {
      		   {
      			   RemoteSyncActivity._singleton.mClientThread.disconnect();
      		   }
-     		   ((Button)v).setText("Connect");
+     		   ((Button)v).setText("Establish Connection");
      	   }
         }
 

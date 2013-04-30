@@ -7,6 +7,7 @@ import java.net.Socket;
 
 import flyinpig.sync.service.structures.CommandResponse;
 import flyinpig.sync.service.structures.DeviceInfo;
+import flyinpig.sync.service.structures.ParsingException;
 
 public class CommandHandler extends Thread {
 
@@ -36,9 +37,44 @@ public class CommandHandler extends Thread {
 				dis = new DataInputStream(sock.getInputStream());
 				
 				// get device info
-				String device_details = dis.readUTF();
-				devinfo = new DeviceInfo(device_details);
+				StringBuffer device_details = new StringBuffer();
+				char charread;
+				boolean endline_read = false;
+				while( (charread = dis.readChar()) != '\n' || endline_read == false )
+				{
+					if( charread == '\n')
+					{
+						endline_read = true;
+					}else{
+						endline_read = false;
+					}
+					device_details.append(charread);
+				}
+				devinfo = new DeviceInfo(device_details.toString());
 				System.out.println(devinfo.toString());
+			}
+			
+			while( sock.isConnected() && die == false )
+			{
+				// continuously read new messages
+				System.out.println("Reached normal read while loop");
+				
+				int messageLength = dis.readInt();
+				byte[] message = new byte[messageLength];
+				if( dis.read(message) == messageLength) 
+				{
+					try{
+						CommandResponse response = CommandExecutor.execute(new CommandResponse(message));
+						if( response != null )
+						{
+							send(response);
+						}
+					}catch (ParsingException e){
+						CommandResponse parsefailure = new CommandResponse(CommandResponse.COMMAND_TYPE_FAILURE);
+						parsefailure.addParameter("Command parsing failure.");
+						System.err.println(e.getMessage());
+					}
+				}
 			}
 			
 		} catch (IOException e) {
@@ -46,12 +82,7 @@ public class CommandHandler extends Thread {
 			e.printStackTrace();
 			return;
 		}
-		
-		while( sock.isConnected() && die == false )
-		{
-			// 
-		}
-		
+			
 		if( die == true )
 		{
 			if( sock != null )

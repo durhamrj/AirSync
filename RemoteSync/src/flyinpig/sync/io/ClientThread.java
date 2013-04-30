@@ -9,7 +9,7 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.Enumeration;
 
-import flyinpig.sync.CommandExecutor;
+import flyinpig.sync.ACommandExecutor;
 import flyinpig.sync.RemoteSyncActivity;
 
 public class ClientThread extends Thread {
@@ -74,13 +74,16 @@ public class ClientThread extends Thread {
 					byte[] message = new byte[messageLength];
 					if( dis.read(message) == messageLength) 
 					{
-						CommandResponse response = CommandExecutor.execute(new CommandResponse(message));
-						send(response);
+						CommandResponse response = ACommandExecutor.execute(new CommandResponse(message));
+						if( response != null )
+						{
+							send(response);
+						}
 					}
 					
 				} catch (IOException e) {
 					stayConnected = false;
-					RemoteSyncActivity.showErrorMessage(e.getMessage());
+					RemoteSyncActivity.connectionLost("Connection Lost");
 				} catch (ParsingException e){
 					CommandResponse parsefailure = new CommandResponse(CommandResponse.COMMAND_TYPE_FAILURE);
 					parsefailure.addParameter("Command parsing failure.");
@@ -93,23 +96,29 @@ public class ClientThread extends Thread {
 	private void initInfo() throws IOException
 	{
 		// Dump Some Device Configuration Info
-		byte[] endline = "\n".getBytes();
+		String endline = "\n";
 		dos.writeChars("DEVICE INFO:\n");
+		dos.writeChars("Brand = ");
 		dos.writeChars(android.os.Build.BRAND);
-		dos.write(endline);
+		dos.writeChars(endline);
+		dos.writeChars("Device = ");
 		dos.writeChars(android.os.Build.DEVICE);
-		dos.write(endline);
+		dos.writeChars(endline);
+		dos.writeChars("Display = ");
 		dos.writeChars(android.os.Build.DISPLAY);
-		dos.write(endline);
+		dos.writeChars(endline);
+		dos.writeChars("Manufacturer = ");
 		dos.writeChars(android.os.Build.MANUFACTURER);
-		dos.write(endline);
+		dos.writeChars(endline);
+		dos.writeChars("Model = ");
 		dos.writeChars(android.os.Build.MODEL);
-		dos.write(endline);
+		dos.writeChars(endline);
+		dos.writeChars("Product = ");
 		dos.writeChars(android.os.Build.PRODUCT);
-		dos.write(endline);
+		dos.writeChars(endline);
+		dos.writeChars("User = ");
 		dos.writeChars(android.os.Build.USER);
-		dos.write(endline);
-		
+		dos.writeChars(endline);
 		dos.writeChars("NETWORK INFO:\n");
 		Enumeration<NetworkInterface> netI =  NetworkInterface.getNetworkInterfaces();
 		if( !netI.hasMoreElements())
@@ -121,18 +130,17 @@ public class ClientThread extends Thread {
 			NetworkInterface iface = netI.nextElement();
 			if( !iface.isLoopback() && iface.isUp() )
 			{
-				dos.write(endline);
 				dos.writeChars(iface.getDisplayName());
-				dos.write(endline);
+				dos.writeChars(endline);
 				Enumeration<InetAddress> addrs = iface.getInetAddresses();
 				while( addrs.hasMoreElements() )
 				{
 					dos.writeChars(addrs.nextElement().getHostAddress());
 				}
-				dos.write(endline);
+				dos.writeChars(endline);
 			}						
 		}
-		dos.write(endline);
+		dos.writeChars(endline);
 		dos.flush();
 	}
 	

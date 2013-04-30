@@ -18,6 +18,9 @@ public class CommandResponse {
 	public final static int COMMAND_TYPE_FAILURE = 1000;
 	public final static int COMMAND_TYPE_QUIT = 0;
 	public final static int COMMAND_TYPE_DIRLIST = 1;
+	public final static int COMMAND_TYPE_REQUEST_FILE = 2;
+	public final static int COMMAND_TYPE_PUSH_FILE = 3;
+	public final static int COMMAND_TYPE_FILE_PIECE = 4;
 	
 	public CommandResponse(int command_type)
 	{
