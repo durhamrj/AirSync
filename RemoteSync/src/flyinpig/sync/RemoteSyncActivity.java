@@ -1,5 +1,10 @@
 package flyinpig.sync;
 
+import java.io.IOException;
+import java.net.InetAddress;
+import java.net.Socket;
+import java.net.UnknownHostException;
+
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.os.Bundle;
@@ -32,7 +37,22 @@ public class RemoteSyncActivity extends Activity {
         Button connectButton = (Button)findViewById(R.id.btnConnect);
         connectButton.setOnClickListener(mGetListener);
         Button disconnectButton = (Button)findViewById(R.id.btndisconnect);
-        disconnectButton.setOnClickListener(mGetListener);       
+        disconnectButton.setOnClickListener(mGetListener); 
+        
+        InetAddress serverAddr[];
+        Socket mClientSocket = null;
+		try {
+			serverAddr = InetAddress.getAllByName("127.0.0.1");
+			
+			if( serverAddr != null && serverAddr.length != 0){
+    			mClientSocket = new Socket(serverAddr[0], 12345);
+    		}
+			
+		} catch (UnknownHostException e1) {
+			return;
+		}catch (IOException e) {
+			return;
+		}
     }
     
     @Override

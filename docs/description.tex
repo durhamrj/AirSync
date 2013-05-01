@@ -1,7 +1,9 @@
 
-\documentclass[12pt,draft]{article}
+\documentclass[12pt]{article}
 \usepackage{hyperref}
+\usepackage{graphicx}
 \pagenumbering{arabic}
+\graphicspath{ {./images/} }
 \begin {document}
 
 \title {AirSync}
@@ -9,7 +11,7 @@
 \date {April 15, 2012}
 \maketitle
 
-\section{Introduction}
+\section{Introduction \& Motivation}
 Many portable devices have become a part of our everyday lives impacting work as well as our home lives and the way we travel. Most of these devices have their own unique means of transferring media and documents. All of these devices can access the internet via some means, e.g. WiFi or cellular network. I will use my situation as an example, between myself and my wife we have at least eight different devices that we like to access music libraries, documents, photos and videos from:
 
 \footnotesize
@@ -72,15 +74,14 @@ AirSync will provide the means to synchronize files between any Windows, Linux a
 \end{tabular}
 \end{center}
 \normalsize
-All application components will be developed in Java to maximize code re-usability and portability between platforms. \emph{Android}\footnote{http://www.android.com/developers/} is essentially any embedded Linux environment with a specialized Java Virtual Machine. If Android specific code sections are properly abstracted into separate Java Classes, the large majority of the android client code will be re-usable with the PC application. The Integrated Development Environment (IDE) will be \emph{Eclipse}\footnote{http://eclipse.org/} with the Android Developer Tools(ADT) addons. \emph{Git}\footnote{http://git-scm.com/} will be used for source versioning control with the git server being hosted on \emph{assembla.com}\footnote{http://www.assembla.com/}. This project will not include the development of an AirSync application for \emph{Apple IOS}\footnote{https://developer.apple.com/devcenter/ios/index.action}. The development environment for IOS only supports Mac OS X. The IOS development language is a managed C++, much of the code would need to be ported and I do not have access to a Mac, so I have exclude support, for now. 
+All application components will be developed in Java to maximize code re-usability and portability between platforms. \emph{Android}\footnote{http://www.android.com/developers/} is essentially any embedded Linux environment with a specialized Java Virtual Machine. If Android specific code sections are properly abstracted into separate Java Classes, the large majority of the android client code will be re-usable with the PC application. The Integrated Development Environment (IDE) will be \emph{Eclipse}\footnote{http://eclipse.org/} with the Android Developer Tools(ADT) addons. \emph{Git}\footnote{http://git-scm.com/} will be used for source versioning control with the git server being hosted on \emph{github.com}\footnote{https://github.com/durhamrj/AirSync}. This project will not include the development of an AirSync application for \emph{Apple IOS}\footnote{https://developer.apple.com/devcenter/ios/index.action}. The development environment for IOS only supports Mac OS X. The IOS development language is a managed C++, much of the code would need to be ported and I do not have access to a Mac, so I have exclude support, for now. 
 
 \subsection{Service Design}
 
 \begin{itemize}
 \item Server side component, provides remote access to files based on system configuration
 \item Tracks initialized devices and associated unique ids
-\item Use XML configuration files
-\item Communicate transfer logs and status 
+\item Communicate transfer files and status 
 \end{itemize}
 
 \subsection{Service Configuration UI Design}
@@ -130,6 +131,12 @@ The source code and build files for this project can be found at \emph{http://gi
 \end{center}
 
 \subsubsection{AirSyncServer Project Structure}
+
+\begin{figure}[h]
+\includegraphics[width=1\textwidth]{class-diag.png}
+\caption{AirSyncServer Class Diagram}
+\end{figure}
+
 \begin{center}
 \begin{tabular}{|l|p{7.5cm}|}
 \hline
@@ -160,9 +167,16 @@ The source code and build files for this project can be found at \emph{http://gi
 \end{tabular}
 \end{center}
 
+
 \subsubsection{RemoteSync Project Structure}
 
 The file structure in the Android project is largely made of generated files. I will only identify the files that I have manually modified as well as source code I have written. Many of the source files are identical between the AirSyncServer project and the RemoteSync Android project.
+
+\begin{figure}[h]
+\includegraphics[width=1\textwidth]{android-class-diag.png}
+\caption{RemoteSync Class Diagram}
+\end{figure}
+
 \begin{center}
 \begin{tabular}{|l|p{7.5cm}|}
 \hline
@@ -187,15 +201,61 @@ The file structure in the Android project is largely made of generated files. I 
 \end{tabular}
 \end{center}
 
+
+
 \section{Using AirSync}
+
+\section{Current State}
+The project can be demonstrated to meet use cases 2 and 3.  Use case 1 has not been implemented because it will require an additional android project to run as a service and allow continuous synchronization.  This use case is far more complicated than I original expected, not only because of the addition project / application required but that it also requires continuous monitoring of the mobile devices power and networking state. Also, services cannot provide user interaction, the interaction needs to occur through an Activity. All configuration and status monitoring will also need to occur through an Activity.  In the Lessons Learned section I describe some specific pitfalls that can occur with a inexperienced android developer. This Activity / Service paradigm along with strict permissions is an example as well. I believe it would require double the effort already expended to develop the proper service and activity interactions to meet the desired usability.
+
+\subsection{Desired Additional Features}
+Besides the use case described above there are some features that have not been implemented in the project.
+\begin{itemize}
+\item \textbf{SharedPreferences:} Applications have a defined method for save instance state information when an application loses focus, but this is intended for running information. If an application is "Force Closed", by a user, the saved instance information will no longer exist. SharedPreferences provides a mechanism to store configuration information in a persisted Hash Table using key/value pairs. Similar to how the Windows Registry works the values can be stored as Boolean, String, or Integer values. Windows, unlike Android, also allows binary data and does not restrict access by other applications. 
+\item \textbf{MediaStore:} Android provides specifc folder structures and tracking mechanisms for media files. The folder structure and location can vary from device to device. Using MediaStore provides a mechanism to manage media files and playlists from an application while abstracting the file system structure. The current implementation lets the user browse the file structure and select the media directories manually.
+
+\item \textbf{Batch File Transfer:} Currently files can be transferred one at a time, but the user must wait for a file to transfer before queueing more file transfers. A queued transfer list and progress display would solve this problem.
+\item \textbf{Access Control:} In order to prevent any device or any person from connecting to any server and accessing/manipulating files the software needs to implement user and/or device based access control. This feature should implement the Bell-LaPadula confidentiality focused access control model.
+\item \textbf{Encrypted Communication:} Encrypting communications channels is necessary to protect the privacy of the files in transit across a network, whether wireless or wired. SSL is a very common standard implementation to enable encryption in most applications. SSL can be configured to utilize AES 256 bit encryption, which is NIST FIPS compliant.\footnote{http://src.nist.gov/publications/fips/fips197/fips-197.pdf}
+
+\item \textbf{Historical Versioning:} Historical versioning would be useful in recovering overwritten files.  The most robust way to implement this feature is to incorporate a version control library for the server portion of the project.\footnote{http://svnkit.com/} Subversion is widely implemented, and most suited for this task. The merge functionalities of subversion will need to be disabled for this feature.
+\end{itemize}
 
 \section{Lessons Learned}
 
+During the development of this project I focused primarily on the android application. Prior to this project I had no android development experience. There are several things that anyone should be aware of when starting an android project.  I am experienced with Java and therefore have fewer lessons learned with the Java development portion of the project.
+
+\begin{itemize}
+\item Apps don't shutdown or close in a traditional sense. As the applications developer you must save/restore application state information. Anytime your application is not focused the operating system may choose to "close" your app and re-initialize it when it regains focus. The developer is responsible for handling the state information properly.
+
+\item Android has permissions that will prevent an application from accessing certain system calls. The permissions that your application use must be specified in the AndroidManifest.xml in the base directory of your Android project. You can edit this file manually or use the graphical editor provided in the ADT.
+\begin{figure}[h]
+\includegraphics[width=1\textwidth]{permissions.png}
+\caption{Android Activity Permissions Editor}
+\end{figure}
+
+\item Android does not allow some SystemIO calls to occur from the primary thread of an Activity.  I ran into this problem with Socket IO.  The non-descriptive RuntimeException below was being thrown whenever I tried. I was unable to find documentation of this on androids development site, but with trial and error discovered that it worked fine in a separate thread. My assumption as that Android does this to avoid causing the interface to hang or lock up while waiting for SystemIO.
+\begin{figure}[h]
+\includegraphics[width=1\textwidth]{runtimeexception.png}
+\caption{Non-descriptive RuntimeException}
+\end{figure}
+
+\item Android also uses XML files to define graphical user interface(GUI) layout. In Java GUIs are defined in the source code, which is typically defining buttons,text labels, fields, etc. and there locations. By moving this definition to XML files called Views or Layouts it significantly cleans up the associated code. In this project I only need to attached Listeners to the Views that I created. I only used the onClick Listener for this project.
+
+\begin{figure}[h]
+\includegraphics[width=1\textwidth]{view-xml.png}
+\caption{Android View/Layout XML}
+\end{figure}
+
+\item The ADT provides a set of emulators that can be configured to matched the desired device specifications and Android versions. This provides an simple method for a developer to try an application on a broad set of configurations. During my development I noticed that system calls that collected information about the device did not behave consistently in the emulator and was causing errors. I was unable to isolate the exact problem, but the same code that failed in the emulator worked well on both physical devices I tried.  Some forum posts I read indicated other developers were having similar finicky issues with the emulated devices.
+
+\end{itemize}
+
+Android applications are strictly structured as \emph{Activities} or \emph{Services}. I developed this application as an activity, which provides the user interaction performs actions when the the application is active.\\
+\\
+Although the android development libraries are very similar to the standard Oracle Java Runtime libraries, I found a few discrepencies in how Oracle Java libraries when compared to Android. One in particular is related to Input/Output. DataInputStream and DataOutputStream functions to read and write UTF Strings to the network do not seem to be compatible when attempting to use the Android and Oracle versions together. In this case I wrote compatible replacement code using readChar() as a work-around.\\
+
 \section{Conclusion}
 
-\section{TODO}
-\begin{itemize}
-\item SharedPreferences
-\item MediaStore
-\end{itemize}
+I intend to continue developing this project for personal use and with the intent to share the source code and allow open development. With the adition of access control restrictions and encrypted communication this is the a document and media sharing solution that can provide corporations and individuals with the benefits of cloud sharing without the privacy concerns. Where corporations can own the assets and allow employees to access work documents on mobile devices securely.  
 \end{document}
