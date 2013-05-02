@@ -7,15 +7,17 @@ import android.app.AlertDialog;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
+import android.view.View;
+import android.view.View.OnClickListener;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
 import flyinpig.sync.io.ClientThread;
 
-public class RemoteSyncActivity extends Activity {
+public class RemoteSyncActivity extends Activity implements OnClickListener {
 	
-	UIListener mGetListener = null;
 	public static String tag = "RemoteSync";
 	ClientThread mClientThread;
 	Handler mHandler;
@@ -33,13 +35,12 @@ public class RemoteSyncActivity extends Activity {
         super.onCreate(savedInstanceState);
         
         _singleton = this;
-        mGetListener = new UIListener();
         mHandler = new Handler();
       
         setContentView(R.layout.main);        
         
         Button connectButton = (Button)findViewById(R.id.btnConnect);
-        connectButton.setOnClickListener(mGetListener);
+        connectButton.setOnClickListener(this);
         
         
     }
@@ -80,11 +81,10 @@ public class RemoteSyncActivity extends Activity {
 	public static void initializeLocalFileView() {
 		_singleton.setContentView(R.layout.browse);
 		Button disconnectButton = (Button)_singleton.findViewById(R.id.btnDisconnect);
-	    disconnectButton.setOnClickListener(_singleton.mGetListener);
+	    disconnectButton.setOnClickListener(_singleton);
 		_singleton.localDirectoryView = (ListView)_singleton.findViewById(R.id.directoryView);
-		_singleton.localDirectoryView.setOnClickListener(_singleton.mGetListener);
 		_singleton.localPathLabel = (TextView)_singleton.findViewById(R.id.pathLabel);
-		_singleton.localPathLabel.setOnClickListener(_singleton.mGetListener);
+		_singleton.localPathLabel.setOnClickListener(_singleton);
 		_singleton.populateLDV("/");
 	}
 
@@ -104,6 +104,79 @@ public class RemoteSyncActivity extends Activity {
 		}
 		localPathLabel.setText(path);
 		localDirectoryView.setAdapter(new ArrayAdapter<File>(this,R.layout.simple,listing));
+	}
+	
+	public void onClick(View v) {
+		
+		if( v == null )
+        {
+     	   return;
+        }
+        
+		Log.v(RemoteSyncActivity.tag,"Onclick called with " + v.getId());
+		
+        if( v.getId() == R.id.btnConnect )
+        {
+        	Button but = (Button)v;
+        	Log.v("RemoteSync", but.getText().toString());
+     	   if( ((Button)v).getText().toString().equals("Establish Connection") )
+     	   {
+	        	   // Try to connect to remote server
+	        	   String ip_host = ((EditText)findViewById(R.id.editIPText)).getText().toString();
+	        	   String sPort = ((EditText)findViewById(R.id.editPortText)).getText().toString();
+	        	   
+	        	   try
+	        	   {
+	        		   int nPort = Integer.parseInt(sPort);
+	        		   if ( mClientThread == null )
+	        		   {
+	        			   mClientThread = new ClientThread();
+	        		   }
+	        		   mClientThread.connect(ip_host,nPort);
+	        		   mClientThread.start();
+	        		   RemoteSyncActivity.initializeLocalFileView();
+	        		   
+	        		   
+	        	   }
+	        	   catch( NumberFormatException e )
+	        	   {
+	        		   //PopUpWindow
+	        		   Log.e(RemoteSyncActivity.tag,e.getMessage());
+	        	   }
+     	   }
+     	   else if( ((Button)v).getText().equals("Disconnect") )
+     	   {
+     		   if( mClientThread != null )
+     		   {
+     			   mClientThread.disconnect();
+     		   }
+     		   connectionLost(null);
+     	   }
+        }else if( v.getId() == R.id.btnDisconnect ){
+        	
+        	   if( mClientThread != null )
+	  		   {
+	  			   mClientThread.disconnect();
+	  		   }
+	  		   connectionLost(null);
+        }else if( v.getId() == R.id.pathLabel ){
+        	TextView path = (TextView)v;
+        	String parent = new File(path.getText().toString()).getParent();
+        	if( parent != null ){
+        		populateLDV(parent);
+        	}
+        }else if( v instanceof TextView ){
+        	TextView selectedText = (TextView)v;
+        	String pathstr = selectedText.getText().toString();
+        	File path = new File(pathstr);
+        	if( path.isDirectory() ){
+        		populateLDV(pathstr);
+        	}else{
+        		// TODO Add context menus
+        		Log.v(tag,"caught click on directory listing");
+        	}
+        }
+
 	}
     
 }
