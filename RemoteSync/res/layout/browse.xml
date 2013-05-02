@@ -1,18 +1,48 @@
 <?xml version="1.0" encoding="utf-8"?>
-<TableLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/LinearLayout1"
     android:layout_width="match_parent"
-    android:layout_height="match_parent" >
+    android:layout_height="match_parent"
+    android:orientation="vertical" >
 
-    <TableRow
-        android:id="@+id/tableRow1"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content" >
-    </TableRow>
-
-    <Button
-        android:id="@+id/btndisconnect"
-        android:layout_width="wrap_content"
+    <TextView
+        android:id="@+id/lblInstruction"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/disconnect_btn" />
+        android:text="@string/select_local"
+        android:textAppearance="?android:attr/textAppearanceLarge" />
 
-</TableLayout>
+    <TextView
+        android:id="@+id/pathLabel"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text=""
+        android:onClick="onClick"                
+        android:clickable="true"
+        android:textAppearance="?android:attr/textAppearanceMedium" />
+
+    <ListView
+        android:id="@+id/directoryView"
+        android:layout_width="match_parent"
+        android:layout_height="338dp" >
+    </ListView>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" >
+
+        <Button
+            android:id="@+id/btnViewServ"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:text="@string/view_serv" />
+
+        <Button
+            android:id="@+id/btnDisconnect"
+            android:layout_width="wrap_content"
+            android:layout_height="41dp"
+            android:text="@string/disconnect_btn" />
+
+    </LinearLayout>
+
+</LinearLayout>

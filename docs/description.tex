@@ -201,9 +201,17 @@ The file structure in the Android project is largely made of generated files. I 
 \end{tabular}
 \end{center}
 
-
-
 \section{Using AirSync}
+
+Two files are required to run AirSync. 
+
+apk
+jar
+
+\begin{figure}[h]
+\includegraphics[width=0.6\textwidth]{android-main.png}
+\caption{RemoteSync Initial View}
+\end{figure}
 
 \section{Current State}
 The project can be demonstrated to meet use cases 2 and 3.  Use case 1 has not been implemented because it will require an additional android project to run as a service and allow continuous synchronization.  This use case is far more complicated than I original expected, not only because of the addition project / application required but that it also requires continuous monitoring of the mobile devices power and networking state. Also, services cannot provide user interaction, the interaction needs to occur through an Activity. All configuration and status monitoring will also need to occur through an Activity.  In the Lessons Learned section I describe some specific pitfalls that can occur with a inexperienced android developer. This Activity / Service paradigm along with strict permissions is an example as well. I believe it would require double the effort already expended to develop the proper service and activity interactions to meet the desired usability.
@@ -240,7 +248,15 @@ During the development of this project I focused primarily on the android applic
 \caption{Non-descriptive RuntimeException}
 \end{figure}
 
-\item Android also uses XML files to define graphical user interface(GUI) layout. In Java GUIs are defined in the source code, which is typically defining buttons,text labels, fields, etc. and there locations. By moving this definition to XML files called Views or Layouts it significantly cleans up the associated code. In this project I only need to attached Listeners to the Views that I created. I only used the onClick Listener for this project.
+\item Android also uses XML files to define graphical user interface(GUI) layout. In Java GUIs are defined in the source code, which is typically defining buttons,text labels, fields, etc. and there locations. By moving this definition to XML files called Views or Layouts it significantly cleans up the associated code. In this project I only need to attached Listeners to the Views that I created. I only used the onClick Listener for this project. View object likes buttons are clickable by default, but other view objects like TextView (The equivalent to a JLabel in java) must be specified as follows within its XML definition.
+\begin{center}
+\begin{tabular}{|l|}
+\hline
+\emph{    android:onClick="onClick"}\\  
+\emph{    android:clickable="true"}\\
+\hline
+\end{tabular}
+\end{center}
 
 \begin{figure}[h]
 \includegraphics[width=1\textwidth]{view-xml.png}
