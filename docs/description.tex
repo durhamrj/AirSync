@@ -2,13 +2,15 @@
 \documentclass[12pt]{article}
 \usepackage{hyperref}
 \usepackage{graphicx}
+\usepackage{float}
 \pagenumbering{arabic}
 \graphicspath{ {./images/} }
 \begin {document}
 
 \title {AirSync}
-\author {Robert Durham}
-\date {April 15, 2012}
+\author {Robert Durham\\
+	\texttt{durhamrj@gmail.com}}
+\date {\today}
 \maketitle
 
 \section{Introduction \& Motivation}
@@ -132,7 +134,8 @@ The source code and build files for this project can be found at \emph{http://gi
 
 \subsubsection{AirSyncServer Project Structure}
 
-\begin{figure}[h]
+\begin{figure}[H]
+\center
 \includegraphics[width=1\textwidth]{class-diag.png}
 \caption{AirSyncServer Class Diagram}
 \end{figure}
@@ -156,7 +159,7 @@ The source code and build files for this project can be found at \emph{http://gi
 	\emph{\textbf{flyinpig.sync.service.structures}}\\
 \hline
 	CommandResponse.java
-	& Handles conversion of commands \& responses between Java objects and binary data to be transmitted over Socket IO. This was initially intended to use XML serialization, but due to a lack of android support the conversion code is all in this file and uses not additional system libraries.\\
+	& Handles conversion of commands \& responses between Java objects and binary data to be transmitted over Socket IO. This was initially intended to use XML serialization, but due to a lack of android support the conversion is all manually coded in this file and uses not additional system libraries.\\
 \hline
 	DeviceInfo.java
 	& Contains specific information about a device sent on initial connection. Used to hold information displayed within the UI to uniquely identify each device.\\
@@ -170,9 +173,18 @@ The source code and build files for this project can be found at \emph{http://gi
 
 \subsubsection{RemoteSync Project Structure}
 
-The file structure in the Android project is largely made of generated files. I will only identify the files that I have manually modified as well as source code I have written. Many of the source files are identical between the AirSyncServer project and the RemoteSync Android project.
+The file structure in the Android project is largely made of generated files. I will only identify the files that I have manually modified as well as source code I have written. Many of the source files are identical between the AirSyncServer project and the RemoteSync Android project.\\
 
-\begin{figure}[h]
+\textbf{Lines of Code by file:}\\
+  255 ./flyinpig/sync/RemoteSyncActivity.java\\
+  261 ./flyinpig/sync/ACommandExecutor.java\\
+   14 ./flyinpig/sync/io/ParsingException.java\\
+  199 ./flyinpig/sync/io/ClientThread.java\\
+  224 ./flyinpig/sync/io/CommandResponse.java\\
+  953 total
+
+\begin{figure}[H]
+\center
 \includegraphics[width=1\textwidth]{android-class-diag.png}
 \caption{RemoteSync Class Diagram}
 \end{figure}
@@ -190,13 +202,19 @@ The file structure in the Android project is largely made of generated files. I 
 	RemoteSyncActivity.java
 	& Main class for application. Monitors/Controls application view and state. Views are generated with a graphical interface in the android developement kit.\\
 \hline
-	UIListener.java
-	& OnClickListener for Views.\\
+	ACommandExecutor.java
+	& Handles CommandResponse objects and executes the associated commands. Acts as an abstraction Layer between ClientThreads networkIO and the UI components.\\
 \hline
 	\emph{\textbf{flyinpig.sync.io}}\\
 \hline
 	ClientThread.java
 	& Handles Client Socket IO. Similar to CommandHandler but more specific to android threading and IO paradigm.\\
+\hline
+	CommandResponse.java
+	& Handles conversion of commands \& responses between Java objects and binary data to be transmitted over Socket IO. This was initially intended to use XML serialization, but due to a lack of android support the conversion is all manually coded in this file and uses not use additional system libraries.\\
+\hline
+	ParsingException.java
+	& Exception thrown by CommandResponse when errors occur parsing command \& responses.\\
 \hline
 \end{tabular}
 \end{center}
@@ -204,21 +222,58 @@ The file structure in the Android project is largely made of generated files. I 
 \section{Using AirSync}
 
 Two files are required to run AirSync. 
+\begin{itemize}
+\item \textbf{RemoteSyncActivity.apk} Android applicaton. This can be copied on any android device v2 or newer and installed. Acts as a client connecting to the AirSyncServer allowing for management and transfer of files on both the android device and the server.
+\item \textbf{AirSyncServer.jar} This jar should be executable on any system with a properly installed Java Runtime Environment(JRE). I have tested this jar with both, openjre v7 and Oracle JRE v7. Though, I believe this jar will execute properly with JRE versions as old as v5.0, it has not been tested.
+\end{itemize}
 
-apk
-jar
+\subsection{AirSyncServer}
 
-\begin{figure}[h]
+To run the AirSyncServer, copy the .jar file to the system you wish to run it on and ensure that a version of the java runtime is properly installed. Double clicking the jar file will execute the jar and a command prompt will open with the jar running. 
+
+\textbf{Screenshots and specifics to come once I finalize the server component}
+
+\subsection{RemoteSync Android App}
+In order to install the user must go into the devices system settings. Typically, varying with device vendor, in either Security or Application settings there is an option to allow installation of applications of unknown source. This means that you are allowing the device to install applications that did not come from Google's android market or 'play store'.\\\\
+Once the application has been installed, looking in the application tray on your device you should find the RemoteSync application. If it doesn't not appear in the application then the application was not properly installed. The following screen will appear on your device. All of these screenshots were taken within the android development emulator and the controls on the right hand side of the device screen can be disregarded.\\
+
+\begin{figure}[H]
+\center
 \includegraphics[width=0.6\textwidth]{android-main.png}
 \caption{RemoteSync Initial View}
 \end{figure}
 
-\section{Current State}
-The project can be demonstrated to meet use cases 2 and 3.  Use case 1 has not been implemented because it will require an additional android project to run as a service and allow continuous synchronization.  This use case is far more complicated than I original expected, not only because of the addition project / application required but that it also requires continuous monitoring of the mobile devices power and networking state. Also, services cannot provide user interaction, the interaction needs to occur through an Activity. All configuration and status monitoring will also need to occur through an Activity.  In the Lessons Learned section I describe some specific pitfalls that can occur with a inexperienced android developer. This Activity / Service paradigm along with strict permissions is an example as well. I believe it would require double the effort already expended to develop the proper service and activity interactions to meet the desired usability.
+In the first field 'Media Host' fill in the IP or host URL where your the server application is running. In the second field, fill in the tcp port that the server is configured to run on. Tap 'Establish Connection' to connect to the server. If the application fails to connect check your networking configuration, server firewall setting s and try again. Once the connection has been established the screen will change to a local device browser.
 
+\begin{figure}[H]
+\center
+\includegraphics[width=0.6\textwidth]{local_browse_view.png}
+\caption{RemoteSync Device File Browser}
+\end{figure}
+
+Tapping a folder will browse into that folder. Tapping a file will bring up a menu prompting to upload that file to the server. The upload will push the file the folder that the server is navigated to. On initial connection that folder is the root folder that the server is configured to allow access to. Tapping 'View Server' will switch to a remote view of the servers file system. Tapping 'Disconnect' will close the connection to the server and change the display back to the initial view. Tapping on the larger text that displays the current path that the browser is listing will browse to the parent folder.
+
+\begin{figure}[H]
+\center
+\includegraphics[width=0.6\textwidth]{deeper-browse-folder-view.png}
+\caption{RemoteSync Browser Subfolders}
+\end{figure}
+
+\begin{figure}[H]
+\center
+\includegraphics[width=0.6\textwidth]{upload-file.png}
+\caption{RemoteSync Upload File Prompt}
+\end{figure}
+
+
+
+\section{Current State}
+The project can be demonstrated to meet use cases 2 and 3.  Use case 1 has not been implemented because it will require an additional android project to run as a service and allow continuous synchronization.  This use case is far more complicated than I original expected, not only because of the addition project / application required but that it also requires continuous monitoring of the mobile devices power and networking state. Also, services cannot provide user interaction, the interaction needs to occur through an Activity. All configuration and status monitoring will also need to occur through an Activity.  In the Lessons Learned section I describe some specific pitfalls that can occur with a inexperienced android developer. This Activity / Service paradigm along with strict permissions is an example as well. I believe it would require double the effort already expended to develop the proper service and activity interactions to meet the desired usability.\\\\
+In order to ensure the backend transfer code was stable and working well I have put off the user interface for the desktop version. My second reason for putting off the UI is that the publicly addressable server I use as an intermediary to transfer files doesn't not have a graphical interface. It is only accessible through SSH. I have been using this server for the majority of my testing and would be unable to test the UI on this system. All of the screen shots of shown in the 'Using AirSync' section are of the commandline interface I created to perform utilize all of the components. I intend to complete the UI component before releasing AirSync to the public. The commandline option will still be usable through a '-nogui' commandline flag when executing the jar.
 \subsection{Desired Additional Features}
 Besides the use case described above there are some features that have not been implemented in the project.
 \begin{itemize}
+\item \textbf{Visual Indicators \& Progress Bars:} Looking at it initially it would seem that adding progress bars to show on the android what is occuring. This will give the user confidence in knowing what exactly the application is doing and that a file transfer is actually happening and how long it will take.
 \item \textbf{SharedPreferences:} Applications have a defined method for save instance state information when an application loses focus, but this is intended for running information. If an application is "Force Closed", by a user, the saved instance information will no longer exist. SharedPreferences provides a mechanism to store configuration information in a persisted Hash Table using key/value pairs. Similar to how the Windows Registry works the values can be stored as Boolean, String, or Integer values. Windows, unlike Android, also allows binary data and does not restrict access by other applications. 
 \item \textbf{MediaStore:} Android provides specifc folder structures and tracking mechanisms for media files. The folder structure and location can vary from device to device. Using MediaStore provides a mechanism to manage media files and playlists from an application while abstracting the file system structure. The current implementation lets the user browse the file structure and select the media directories manually.
 
@@ -231,19 +286,23 @@ Besides the use case described above there are some features that have not been 
 
 \section{Lessons Learned}
 
+Before diving into the project development I want to discuss the documentation. This is the first time I have used \LaTeX  for documentation. I have very impressed by the versatility and consistency. Any time that I have lost learning its nuances while generating this documentation has likely made up for the time that I would have spent in Microsoft Word or OpenOffice trying to perfect the documents formatting.  It allows you to focus on writing the text and generating the content without being distracted by issues like inconsistent spacing, images that are centered quite correctly. Once you have your format and layout set in latex, then it is set. Adding text, figures, lists, tables do not affect the layout before or after your additions. I have spent seven years working for DoD generating documents so large that many times we had to divide sections into separate documents because they would cause Word to crash. The largest of which was in excess of 700 pages. Having become familiar with \LaTeX  I have begun negotiating its use with my DoD program management team. 
+
 During the development of this project I focused primarily on the android application. Prior to this project I had no android development experience. There are several things that anyone should be aware of when starting an android project.  I am experienced with Java and therefore have fewer lessons learned with the Java development portion of the project.
 
 \begin{itemize}
-\item Apps don't shutdown or close in a traditional sense. As the applications developer you must save/restore application state information. Anytime your application is not focused the operating system may choose to "close" your app and re-initialize it when it regains focus. The developer is responsible for handling the state information properly.
+\item Apps do not shutdown or close in a traditional sense. As the applications developer you must save/restore application state information. Anytime your application is not focused the operating system may choose to "close" your app and re-initialize it when it regains focus. The developer is responsible for handling the state information properly.
 
 \item Android has permissions that will prevent an application from accessing certain system calls. The permissions that your application use must be specified in the AndroidManifest.xml in the base directory of your Android project. You can edit this file manually or use the graphical editor provided in the ADT.
-\begin{figure}[h]
+\begin{figure}[H]
+\center
 \includegraphics[width=1\textwidth]{permissions.png}
 \caption{Android Activity Permissions Editor}
 \end{figure}
 
-\item Android does not allow some SystemIO calls to occur from the primary thread of an Activity.  I ran into this problem with Socket IO.  The non-descriptive RuntimeException below was being thrown whenever I tried. I was unable to find documentation of this on androids development site, but with trial and error discovered that it worked fine in a separate thread. My assumption as that Android does this to avoid causing the interface to hang or lock up while waiting for SystemIO.
-\begin{figure}[h]
+\item Android does not allow some SystemIO calls to occur from the primary thread of an Activity.  I ran into this problem with Socket IO. Similarly, when attempting to change the current application view from  The non-descriptive RuntimeException below was being thrown whenever I tried. I was unable to find documentation of this on androids development site, but with trial and error discovered that it worked fine in a separate thread. My assumption as that Android does this to avoid causing the interface to hang or lock up while waiting for SystemIO. 
+\begin{figure}[H]
+\center
 \includegraphics[width=1\textwidth]{runtimeexception.png}
 \caption{Non-descriptive RuntimeException}
 \end{figure}
@@ -258,7 +317,8 @@ During the development of this project I focused primarily on the android applic
 \end{tabular}
 \end{center}
 
-\begin{figure}[h]
+\begin{figure}[H]
+\center
 \includegraphics[width=1\textwidth]{view-xml.png}
 \caption{Android View/Layout XML}
 \end{figure}

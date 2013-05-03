@@ -7,6 +7,10 @@ import android.app.AlertDialog;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
+import android.view.ContextMenu;
+import android.view.ContextMenu.ContextMenuInfo;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.ArrayAdapter;
@@ -26,6 +30,8 @@ public class RemoteSyncActivity extends Activity implements OnClickListener {
 	TextView localPathLabel = null;
 	ListView remoteDirectoryView = null;
 	TextView remotePathLabel = null;
+	TextView lastClickedItem = null;
+	boolean lastClickedIsLocal = true; 
 	
 	static RemoteSyncActivity _singleton = null;
 	
@@ -82,10 +88,25 @@ public class RemoteSyncActivity extends Activity implements OnClickListener {
 		_singleton.setContentView(R.layout.browse);
 		Button disconnectButton = (Button)_singleton.findViewById(R.id.btnDisconnect);
 	    disconnectButton.setOnClickListener(_singleton);
+	    Button viewServerButton = (Button)_singleton.findViewById(R.id.btnViewServ);
+	    viewServerButton.setOnClickListener(_singleton);
 		_singleton.localDirectoryView = (ListView)_singleton.findViewById(R.id.directoryView);
 		_singleton.localPathLabel = (TextView)_singleton.findViewById(R.id.pathLabel);
 		_singleton.localPathLabel.setOnClickListener(_singleton);
 		_singleton.populateLDV("/");
+	}
+	
+	public static void initializeRemoteFileView() {
+		_singleton.setContentView(R.layout.remotebrowse);
+		Button disconnectButton = (Button)_singleton.findViewById(R.id.btnDisconnect);
+	    disconnectButton.setOnClickListener(_singleton);
+	    Button viewLocalButton = (Button)_singleton.findViewById(R.id.btnViewLocal);
+	    viewLocalButton.setOnClickListener(_singleton);
+		_singleton.remoteDirectoryView = (ListView)_singleton.findViewById(R.id.remotedirectoryView);
+		_singleton.remotePathLabel = (TextView)_singleton.findViewById(R.id.remotepathLabel);
+		_singleton.remotePathLabel.setOnClickListener(_singleton);
+		_singleton.remotePathLabel.setText("/");
+		ACommandExecutor.requestDirectoryListing("/");
 	}
 
 	protected void populateLDV(String path) {
@@ -102,8 +123,20 @@ public class RemoteSyncActivity extends Activity implements OnClickListener {
 		}else{
 			listing = new File(path).listFiles();
 		}
-		localPathLabel.setText(path);
-		localDirectoryView.setAdapter(new ArrayAdapter<File>(this,R.layout.simple,listing));
+		
+		if( listing != null )
+		{
+			localPathLabel.setText(path);
+			localDirectoryView.setAdapter(new ArrayAdapter<File>(this,R.layout.simple,listing));
+		}
+	}
+	
+	protected void populateRDV(String[] listing)
+	{
+		if( listing != null )
+		{
+			remoteDirectoryView.setAdapter(new ArrayAdapter<String>(this,R.layout.remotesimple,listing));
+		}		
 	}
 	
 	public void onClick(View v) {
@@ -134,13 +167,12 @@ public class RemoteSyncActivity extends Activity implements OnClickListener {
 	        		   }
 	        		   mClientThread.connect(ip_host,nPort);
 	        		   mClientThread.start();
-	        		   RemoteSyncActivity.initializeLocalFileView();
-	        		   
-	        		   
+	        		   initializeLocalFileView();
 	        	   }
 	        	   catch( NumberFormatException e )
 	        	   {
 	        		   //PopUpWindow
+	        		   showErrorMessage(e.getMessage());
 	        		   Log.e(RemoteSyncActivity.tag,e.getMessage());
 	        	   }
      	   }
@@ -165,18 +197,59 @@ public class RemoteSyncActivity extends Activity implements OnClickListener {
         	if( parent != null ){
         		populateLDV(parent);
         	}
-        }else if( v instanceof TextView ){
-        	TextView selectedText = (TextView)v;
-        	String pathstr = selectedText.getText().toString();
-        	File path = new File(pathstr);
-        	if( path.isDirectory() ){
-        		populateLDV(pathstr);
-        	}else{
-        		// TODO Add context menus
-        		Log.v(tag,"caught click on directory listing");
-        	}
+        }else if( v.getId() == R.id.btnViewLocal ){
+        	initializeLocalFileView();
+        }else if( v.getId() == R.id.btnViewServ ){
+        	initializeRemoteFileView();
         }
-
 	}
     
+	public void onClickLocalBrowser(View v)
+	{
+		TextView selectedText = (TextView)v;
+		lastClickedItem = selectedText;
+		lastClickedIsLocal = true;
+    	String pathstr = selectedText.getText().toString();
+    	File path = new File(pathstr);
+    	if( path.isDirectory() ){
+    		populateLDV(pathstr);
+    	}else{
+    		Log.v(tag,"caught click on directory listing");
+    		registerForContextMenu(v);
+    		v.showContextMenu();
+    	}
+	}
+	
+	public void onClickRemoteBrowser(View v)
+	{
+		TextView selectedText = (TextView)v;
+		lastClickedItem = selectedText;
+		lastClickedIsLocal = false;
+    	String pathstr = selectedText.getText().toString();
+    	if( pathstr.endsWith("/") ){
+    		populateRDV(new String[0]);
+    		ACommandExecutor.requestDirectoryListing(pathstr);
+    	}else{
+    		Log.v(tag,"caught click on directory listing");
+    		registerForContextMenu(v);
+    		v.showContextMenu();
+    	}
+	}
+	
+	@Override
+	public boolean onContextItemSelected(MenuItem item) {
+		if( item.getItemId() == R.id.upload )
+		{
+			ACommandExecutor.uploadFile(lastClickedItem.getText().toString());
+		}
+		return false;
+	}
+	
+	@Override
+	public void onCreateContextMenu(ContextMenu menu, View v,
+	                                ContextMenuInfo menuInfo) {
+	    super.onCreateContextMenu(menu, v, menuInfo);
+	    MenuInflater inflater = getMenuInflater();
+	    inflater.inflate(R.menu.browser_contextmenu, menu);
+	}
 }

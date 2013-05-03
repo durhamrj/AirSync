@@ -1,19 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/LinearLayout1"
+    android:id="@+id/LinearLayout2"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical" >
 
     <TextView
-        android:id="@+id/lblInstruction"
+        android:id="@+id/remotelblInstruction"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/select_local"
+        android:text="@string/select_remote"
         android:textAppearance="?android:attr/textAppearanceLarge" />
 
     <TextView
-        android:id="@+id/pathLabel"
+        android:id="@+id/remotepathLabel"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text=""
@@ -22,7 +22,7 @@
         android:textAppearance="?android:attr/textAppearanceMedium" />
 
     <ListView
-        android:id="@+id/directoryView"
+        android:id="@+id/remotedirectoryView"
         android:layout_width="match_parent"
         android:layout_height="338dp" >
     </ListView>
@@ -32,10 +32,10 @@
         android:layout_height="wrap_content" >
 
         <Button
-            android:id="@+id/btnViewServ"
+            android:id="@+id/btnViewLocal"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
-            android:text="@string/view_serv" />
+            android:text="@string/viewlocal" />
 
         <Button
             android:id="@+id/btnDisconnect"

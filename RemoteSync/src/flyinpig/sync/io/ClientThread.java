@@ -18,7 +18,7 @@ public class ClientThread extends Thread {
 	boolean stayConnected = false;
 	String iphostname = null;
 	Integer port = null;
-	DataOutputStream dos = null;
+	public DataOutputStream dos = null;
 	DataInputStream dis = null;
 	
 	public ClientThread()
@@ -144,7 +144,7 @@ public class ClientThread extends Thread {
 		dos.flush();
 	}
 	
-	public void send( CommandResponse cr )
+	public synchronized void send( CommandResponse cr )
 	{
 		byte[] message = cr.toByteArray();
 		
