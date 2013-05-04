@@ -1,6 +1,13 @@
 package flyinpig.sync.service;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.LinkedList;
+
+import com.thoughtworks.xstream.XStream;
+
+import flyinpig.sync.service.structures.Config;
 
 public class Main {
 	
@@ -8,27 +15,60 @@ public class Main {
 	
 	public static void main(String[] args)
 	{
-		int port = 2600;
 		
-		Listener socklistener = new Listener(port);
-		if( socklistener.listen() )
-		{
-			System.out.println("Listening for connections on " + port);
-		}else{
-			System.out.println("Failed to open connection on " + port);
+		XStream xstream = new XStream();
+		xstream.alias("config", Config.class);
+		Config config = null;
+		try{
+			config = (Config)xstream.fromXML("config.xml");
+		}catch( Exception e ){
+			System.err.println("Unable to find configuration file.");
+			return;
 		}
-		socklistener.start();
+//		Listener socklistener = new Listener(config.port);
+//		if( socklistener.listen() )
+//		{
+//			System.out.println("Listening for connections on " + config.port);
+//		}else{
+//			System.out.println("Failed to open connection on " + config.port);
+//		}
+//		socklistener.start();
 		
-		while( socklistener.isAlive() )
-		{
-			try {
-				Thread.sleep(1000);
-			} catch (InterruptedException e) {
-				// do nothing
-			}
-		}
+		commandlineInterface();
 	}
 	
+	private static void commandlineInterface() {
+		// TODO Auto-generated method stub
+		System.out.println("Enter command: ");
+		BufferedReader in = new BufferedReader(new InputStreamReader(System.in)); 
+		boolean deviceSelected = false;
+		
+		try {
+			String input = in.readLine().trim().toLowerCase();
+			while( input != "quit")
+			{
+				switch(input)
+				{
+				case "help":
+					StringBuffer sb = new StringBuffer();
+					if( deviceSelected )
+					{
+						
+					}else{
+						
+					}
+					
+					break;
+				default:
+					System.out.println("Unrecognized command.\n");
+				}
+			}
+			
+		} catch (IOException e) {
+			// should never happen with System.in
+		}
+	}
+
 	public static void register(CommandHandler commandHandler)
 	{
 		if( commandHandler != null )
