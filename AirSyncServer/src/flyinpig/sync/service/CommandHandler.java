@@ -2,6 +2,8 @@ package flyinpig.sync.service;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.Socket;
 
@@ -11,11 +13,16 @@ import flyinpig.sync.service.structures.ParsingException;
 
 public class CommandHandler extends Thread {
 
-	Socket sock = null;
+	private Socket sock = null;
 	DeviceInfo devinfo = null;
-	DataInputStream dis = null;
-	DataOutputStream dos =  null;
-	boolean die = false;
+	private DataInputStream dis = null;
+	private DataOutputStream dos =  null;
+	private boolean die = false;
+	FileOutputStream pushFile = null;
+	int pushId = -1;
+	FileInputStream requestFile = null;
+	int requestId = -1;
+	String remoteWorkingDirectory = "/";
 	
 	public CommandHandler(Socket sock)
 	{
@@ -64,7 +71,7 @@ public class CommandHandler extends Thread {
 				if( dis.read(message) == messageLength) 
 				{
 					try{
-						CommandResponse response = CommandExecutor.execute(new CommandResponse(message));
+						CommandResponse response = CommandExecutor.execute(new CommandResponse(message), this);
 						if( response != null )
 						{
 							send(response);
@@ -115,6 +122,10 @@ public class CommandHandler extends Thread {
 				System.err.println(e.getMessage());
 			}
 		}
+	}
+
+	public void disconnect() {
+		die = true;
 	}
 
 }

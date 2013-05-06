@@ -21,6 +21,7 @@ public class CommandResponse {
 	public final static int COMMAND_TYPE_REQUEST_FILE = 2;
 	public final static int COMMAND_TYPE_PUSH_FILE = 3;
 	public final static int COMMAND_TYPE_FILE_PIECE = 4;
+	public final static int COMMAND_TYPE_END_FILE = 50;
 	
 	public CommandResponse(int command_type)
 	{
@@ -191,6 +192,11 @@ public class CommandResponse {
 		return null;
 	}
 
+
+	public void setCommandtype(int type) {
+		commandtype = type;
+	}
+	
 	public static void main(String[] args)
 	{
 		String test1 = "Test1llllalksdfjlaj;sdflkjajsdlkfjlsajd;fljslkajdfjs;lkajfl;saj;jlfsdlkjasjdflksjlkfs";

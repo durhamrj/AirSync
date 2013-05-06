@@ -22,7 +22,8 @@ public class ACommandExecutor {
 	
 	public static CommandResponse execute(CommandResponse commandResponse ) {
 		boolean failure = false;
-		boolean response = false;		
+		boolean response = false;
+		boolean endoffile = false;
 		int type = commandResponse.getCommandType();
 		
 		if( type >= CommandResponse.COMMAND_TYPE_FAILURE ) // >= 1000
@@ -35,6 +36,12 @@ public class ACommandExecutor {
 		{
 			response = true;
 			type -= CommandResponse.COMMAND_TYPE_RESPONSE;
+		}
+		
+		if( type >= CommandResponse.COMMAND_TYPE_END_FILE ) // >= 50
+		{
+			endoffile = true;
+			type -= CommandResponse.COMMAND_TYPE_END_FILE;
 		}
 		
 		switch(type)
@@ -128,10 +135,16 @@ public class ACommandExecutor {
 					
 					while( index <= size )
 					{
-						index += fis.read(buffer);
+						int numread = fis.read(buffer);
+						index += numread;
 						chunks += 1;
-						CommandResponse filepiece = new CommandResponse(CommandResponse.COMMAND_TYPE_FILE_PIECE,buffer.toString());
+						CommandResponse filepiece = new CommandResponse(CommandResponse.COMMAND_TYPE_FILE_PIECE,new String(buffer,0,numread));
 						filepiece.setCommandid(commandResponse.getCommandid());
+						if( index == size ) // if last piece of file
+						{
+							fis.close();
+							filepiece.setCommandtype(CommandResponse.COMMAND_TYPE_FILE_PIECE + CommandResponse.COMMAND_TYPE_END_FILE);
+						}
 						RemoteSyncActivity._singleton.mClientThread.send(filepiece);
 					}
 					
@@ -182,6 +195,12 @@ public class ACommandExecutor {
 			{
 				try {
 					pushFile.write(commandResponse.getParameters().get(0).getBytes());
+					if( endoffile )
+					{
+						pushFile.close();
+						pushFile = null;
+						pushId = -1;
+					}
 				} catch (Exception e) {
 					RemoteSyncActivity.showErrorMessage(e.getMessage());
 				}
@@ -228,10 +247,16 @@ public class ACommandExecutor {
 						long chunks = 0;
 						while( index <= size )
 						{
-							index += fis.read(buffer);
+							int numread = fis.read(buffer);
+							index += numread;
 							chunks += 1;
-							CommandResponse filepiece = new CommandResponse(CommandResponse.COMMAND_TYPE_FILE_PIECE,buffer.toString());
+							CommandResponse filepiece = new CommandResponse(CommandResponse.COMMAND_TYPE_FILE_PIECE,new String(buffer,0,numread));
 							filepiece.setCommandid(command.getCommandid());
+							if( index == size ) // if last piece of file
+							{
+								fis.close();
+								filepiece.setCommandtype(CommandResponse.COMMAND_TYPE_FILE_PIECE + CommandResponse.COMMAND_TYPE_END_FILE);
+							}
 							RemoteSyncActivity._singleton.mClientThread.send(filepiece);
 						}
 						
