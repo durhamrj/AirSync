@@ -3,6 +3,7 @@
 \usepackage{hyperref}
 \usepackage{graphicx}
 \usepackage{float}
+\usepackage{listings}
 \pagenumbering{arabic}
 \graphicspath{ {./images/} }
 \begin {document}
@@ -107,10 +108,7 @@ All application components will be developed in Java to maximize code re-usabili
 \end{itemize}
 
 \subsection{Source Code Organization}
-\begin{center}
-\emph{\textbf{This section is being updated as the project progresses.}}\\
-\end{center}
-The source code and build files for this project can be found at \emph{http://github.com/durhamrj/AirSync}. The Service and Service Configuration UI share a common Eclipse/Java project. The components are separated by the package structure within this project. The  folder structure of the project is as follows:
+The source code and build files for this project can be found at\\ \emph{http://github.com/durhamrj/AirSync}. The Service and Service Configuration UI share a common Eclipse/Java project. The components are separated by the package structure within this project. The  folder structure of the project is as follows:
 
 \begin{center}
 \begin{tabular}{|l|p{7.5cm}|}
@@ -133,12 +131,18 @@ The source code and build files for this project can be found at \emph{http://gi
 \end{center}
 
 \subsubsection{AirSyncServer Project Structure}
+AirSyncServer source is an Eclipse Java project. Eclipse is also used for the Android Development Toolkit(ADT) and was the logical choice for an IDE for this project. \\
 
-\begin{figure}[H]
-\center
-\includegraphics[width=1\textwidth]{class-diag.png}
-\caption{AirSyncServer Class Diagram}
-\end{figure}
+\textbf{Lines of Code by file:}\\
+  76 ./flyinpig/sync/service/Listener.java\\
+  297 ./flyinpig/sync/service/Main.java\\
+   17 ./flyinpig/sync/service/structures/DeviceInfo.java\\
+   14 ./flyinpig/sync/service/structures/ParsingException.java\\
+  224 ./flyinpig/sync/service/structures/CommandResponse.java\\
+    6 ./flyinpig/sync/service/structures/Config.java\\
+  148 ./flyinpig/sync/service/CommandHandler.java\\
+  293 ./flyinpig/sync/service/CommandExecutor.java\\
+ 1075 total\\
 
 \begin{center}
 \begin{tabular}{|l|p{7.5cm}|}
@@ -147,14 +151,17 @@ The source code and build files for this project can be found at \emph{http://gi
 \hline
 	\emph{\textbf{flyinpig.sync.service}}\\
 \hline 
+	CommandExecutor.java
+	& Handles CommandResponse objects and executes the associated commands. CommandExecutor is a singleton but uses state information from CommandHandler as needed for some functions.\\
+\hline
 	CommandHandler.java
-	& Handles socket IO with client connections as a separate thread\\
+	& Handles socket IO with client connections as a separate thread.\\
 \hline
 	Listener.java
-	& Opens listening port in a thread and spawns new CommandHandler threads for each new incoming connection. New connections are tracked for display in the UI.\\
+	& Opens listening port in a thread and spawns new CommandHandler threads for each new incoming connection. New CommandHandlers are registered with Main for display in command interface and UI in the future.\\
 \hline
 	Main.java
-	& Singleton class. Includes the application main and fields/structures to track connection application state information.\\
+	& Singleton class. Includes the application main and fields/structures to track connection application state information and commandline interface implementation.\\
 \hline
 	\emph{\textbf{flyinpig.sync.service.structures}}\\
 \hline
@@ -167,13 +174,21 @@ The source code and build files for this project can be found at \emph{http://gi
 	ParsingException.java
 	& Exception thrown by CommandResponse when errors occur parsing command \& responses.\\
 \hline
+	Config.java
+	& Class used for XML serialization of AirSyncServer configuration.\\
+\hline
 \end{tabular}
 \end{center}
 
+\begin{figure}[H]
+\center
+\includegraphics[width=.9\textwidth]{class-diag.png}
+\caption{AirSyncServer Class Diagram}
+\end{figure}
 
 \subsubsection{RemoteSync Project Structure}
 
-The file structure in the Android project is largely made of generated files. I will only identify the files that I have manually modified as well as source code I have written. Many of the source files are identical between the AirSyncServer project and the RemoteSync Android project.\\
+The file structure in the Android project is largely made of generated files. I will only identify the files that I have manually modified as well as source code I have written. Many of the source files are identical between the AirSyncServer project and the RemoteSync\footnote{AirSync name was taken already for Android Market} Android project.\\
 
 \textbf{Lines of Code by file:}\\
   255 ./flyinpig/sync/RemoteSyncActivity.java\\
@@ -181,7 +196,7 @@ The file structure in the Android project is largely made of generated files. I 
    14 ./flyinpig/sync/io/ParsingException.java\\
   199 ./flyinpig/sync/io/ClientThread.java\\
   224 ./flyinpig/sync/io/CommandResponse.java\\
-  953 total
+  953 total\\
 
 \begin{figure}[H]
 \center
@@ -203,7 +218,7 @@ The file structure in the Android project is largely made of generated files. I 
 	& Main class for application. Monitors/Controls application view and state. Views are generated with a graphical interface in the android developement kit.\\
 \hline
 	ACommandExecutor.java
-	& Handles CommandResponse objects and executes the associated commands. Acts as an abstraction Layer between ClientThreads networkIO and the UI components.\\
+	& Handles CommandResponse objects and executes the associated commands. Acts as an abstraction Layer between CommandHandlers networkIO and the UI components. \\
 \hline
 	\emph{\textbf{flyinpig.sync.io}}\\
 \hline
@@ -224,14 +239,57 @@ The file structure in the Android project is largely made of generated files. I 
 Two files are required to run AirSync. 
 \begin{itemize}
 \item \textbf{RemoteSyncActivity.apk} Android applicaton. This can be copied on any android device v2 or newer and installed. Acts as a client connecting to the AirSyncServer allowing for management and transfer of files on both the android device and the server.
-\item \textbf{AirSyncServer.jar} This jar should be executable on any system with a properly installed Java Runtime Environment(JRE). I have tested this jar with both, openjre v7 and Oracle JRE v7. Though, I believe this jar will execute properly with JRE versions as old as v5.0, it has not been tested.
+\item \textbf{AirSyncServer.jar} This jar should be executable on any system with a properly installed Java Runtime Environment(JRE). I have tested this jar with both, openjre v7 and Oracle JRE v7. Though, I believe this jar will execute properly with JRE version on 6 as well, although it has not been tested.
 \end{itemize}
 
 \subsection{AirSyncServer}
 
-To run the AirSyncServer, copy the .jar file to the system you wish to run it on and ensure that a version of the java runtime is properly installed. Double clicking the jar file will execute the jar and a command prompt will open with the jar running. 
+To run the AirSyncServer, copy the .jar file to the system you wish to run it on and ensure that a version of the java runtime is properly installed. Double clicking the jar file will execute the jar and a command prompt will open with the jar running. The jar file requires a file in the same directory \emph{config.xml}. Below is once example with a relative folder path. The server prevents uploading or downloading of any file outside of this directory. If the path doesn't not exist, the server attempts to create it.
 
-\textbf{Screenshots and specifics to come once I finalize the server component}
+\begin{center}
+\begin{tabular}{|l|}
+\hline
+\begin{lstlisting}
+<config>
+  <port>2600</port>
+  <rootpath>AirSyncServer/share</rootpath>
+</config>
+\end{lstlisting}\\
+\hline
+\end{tabular}
+\end{center}
+
+\begin{figure}[H]
+\center
+\includegraphics[width=1\textwidth]{starting-and-help.png}
+\caption{Starting AirSyncServer and Help Menu}
+\end{figure}
+
+Without any devices connected, through the commandline interface you can browse the local directory structure and see what files and folders will be visible to connected applications. In the screenshot below is an example of how folders and subfolders look in the display. \emph{diskstats} and \emph{partitions} are two files that were transferred from the Android emulator \emph{/proc} folder while testing the application.
+
+\begin{figure}[H]
+\center
+\includegraphics[width=1\textwidth]{jar-local-browse.png}
+\caption{Local Browsing}
+\end{figure}
+
+Once AirSyncServer has been launched client devices can connect to it. In the following screenshot the emulator has been connected and device information is displayed when the \emph{devicelist} command is entered. 
+
+\begin{figure}[H]
+\center
+\includegraphics[width=1\textwidth]{devicelist.png}
+\caption{Device List}
+\end{figure}
+
+At this point the connected device can remotely upload and download files from the shared directory. The Android App section will walk through those steps. In order to browse the files on the connected device, the device must first be selected through the commandline interface. In the screenshot above there is only one device connected so this is device 0. In the following screenshot, entering \emph{select 0} will select the connected to device in order to interact with it. By executing the \emph{rls} command the root folder listing is retrieved for the device.
+
+\begin{figure}[H]
+\center
+\includegraphics[width=1\textwidth]{jar-remote-listing.png}
+\caption{Remote Folder Listing}
+\end{figure}
+
+Changing directories on the remote device is performed by issuing the \emph{rcd} command. Many of the root system files and directories on android devices have restricted access. Few folders will allow read/write access at the root level and these are not present on the emulator. The \emph{pull} and \emph{push} commands are used to request files from the remote device and push files to the remote device. At this stage there are no progress indicators for file transfers.
 
 \subsection{RemoteSync Android App}
 In order to install the user must go into the devices system settings. Typically, varying with device vendor, in either Security or Application settings there is an option to allow installation of applications of unknown source. This means that you are allowing the device to install applications that did not come from Google's android market or 'play store'.\\\\
@@ -265,6 +323,27 @@ Tapping a folder will browse into that folder. Tapping a file will bring up a me
 \caption{RemoteSync Upload File Prompt}
 \end{figure}
 
+Below the Server Browser display list the available folder contents on the connected server. Similar to the local browser listing, tapping a folder will browse into that folder and tapping file will prompt to Download the file.
+
+\begin{figure}[H]
+\center
+\includegraphics[width=0.6\textwidth]{remote-browser-view.png}
+\caption{RemoteSync Server Browser}
+\end{figure}
+
+\begin{figure}[H]
+\center
+\includegraphics[width=0.6\textwidth]{download-context-menu.png}
+\caption{RemoteSync Download Menu}
+\end{figure}
+
+The following caption shows two files from the android device that have been upload from the \emph{/proc} folder, \emph{partitions} and \emph{diskstats}. This is one of the few readable folders on the emulator. The files in this folder contain system information similar to any UNIX system, as android as a UNIX based embedded operating system.
+
+\begin{figure}[H]
+\center
+\includegraphics[width=0.6\textwidth]{after-file-push.png}
+\caption{RemoteSync After Uploading Files}
+\end{figure}
 
 
 \section{Current State}
@@ -333,5 +412,5 @@ Although the android development libraries are very similar to the standard Orac
 
 \section{Conclusion}
 
-I intend to continue developing this project for personal use and with the intent to share the source code and allow open development. With the adition of access control restrictions and encrypted communication this is the a document and media sharing solution that can provide corporations and individuals with the benefits of cloud sharing without the privacy concerns. Where corporations can own the assets and allow employees to access work documents on mobile devices securely.  
+I intend to continue developing this project for personal use and hope to share the source code and allow open development. All project contents and source code are available on GitHub. I currently am not allowing anyone besides myself to edit the source. In the future with the addition of access control restrictions and encrypted communication this is a viable document and media sharing solution that can provide corporations and individuals with the benefits of cloud sharing without the privacy concerns. Corporations will be able to own and control the server assets and allow employees to access work documents on mobile devices securely. Because this projects source code is open, companies will also be able add additional security features as needed, i.e. deleting important documents within a certain time frame of download to protect it. 
 \end{document}

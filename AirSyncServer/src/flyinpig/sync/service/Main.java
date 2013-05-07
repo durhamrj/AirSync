@@ -206,6 +206,14 @@ public class Main {
 						selectedDevice.remoteWorkingDirectory += '/';
 					}
 										
+				}else if( input.startsWith("pull ")){
+					String file = input.substring(5);
+					
+					CommandExecutor.requestFile(file, selectedDevice);
+				}else if( input.startsWith("push ")){
+					String file = input.substring(5);
+					System.out.println("Pushing file " + getFullPath(file) );
+					CommandExecutor.uploadFile(getFullPath(file), selectedDevice);
 				}else{
 					if( !input.equals("quit")){
 						System.out.println("Unrecognized command.\n");

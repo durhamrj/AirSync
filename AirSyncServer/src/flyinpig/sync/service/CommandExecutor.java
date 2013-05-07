@@ -68,7 +68,7 @@ public class CommandExecutor {
 					for( File f : rootDirs )
 					{
 						if( f.isDirectory() ){
-							rootdirmsg.addParameter(f.getPath() + File.pathSeparatorChar);
+							rootdirmsg.addParameter(f.getPath() + File.separatorChar);
 						}else{
 							rootdirmsg.addParameter(f.getPath());
 						}
@@ -78,7 +78,14 @@ public class CommandExecutor {
 					CommandResponse dirmsg = new CommandResponse(CommandResponse.COMMAND_TYPE_DIRLIST + CommandResponse.COMMAND_TYPE_RESPONSE);
 					dirmsg.setCommandid(commandResponse.getCommandid());
 					
-					File dir = new File(params.get(0));
+					File dir;
+					try {
+						dir = new File(Main.getFullPath(params.get(0)));
+					} catch (FileNotFoundException e) {
+						CommandResponse failmsg = new CommandResponse(CommandResponse.COMMAND_TYPE_FAILURE);
+						failmsg.addParameter("Directory does not exist!");
+						return failmsg;
+					}
 					if( !dir.exists() )
 					{
 						CommandResponse failmsg = new CommandResponse(CommandResponse.COMMAND_TYPE_FAILURE);
@@ -97,11 +104,12 @@ public class CommandExecutor {
 					for( File f : listing )
 					{
 						if( f.isDirectory() ){
-							dirmsg.addParameter(f.getPath() + File.pathSeparatorChar);
+							dirmsg.addParameter(f.getName() + File.separatorChar);
 						}else{
-							dirmsg.addParameter(f.getPath());
+							dirmsg.addParameter(f.getName());
 						}
 					}
+					return dirmsg;
 				}
 			}
 		case CommandResponse.COMMAND_TYPE_REQUEST_FILE:
@@ -279,6 +287,11 @@ public class CommandExecutor {
 
 	public static void requestDirectoryListing(String path,CommandHandler device) {
 		CommandResponse command = new CommandResponse(CommandResponse.COMMAND_TYPE_DIRLIST,path);
+		device.send(command);
+	}
+
+	public static void requestFile(String file, CommandHandler device) {
+		CommandResponse command = new CommandResponse(CommandResponse.COMMAND_TYPE_REQUEST_FILE, file);
 		device.send(command);
 	}
 

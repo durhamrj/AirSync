@@ -32,6 +32,7 @@ public class RemoteSyncActivity extends Activity implements OnClickListener {
 	TextView remotePathLabel = null;
 	TextView lastClickedItem = null;
 	boolean lastClickedIsLocal = true; 
+	ArrayAdapter<String> adapter = null;
 	
 	static RemoteSyncActivity _singleton = null;
 	
@@ -81,7 +82,13 @@ public class RemoteSyncActivity extends Activity implements OnClickListener {
 		{
 			btnConnect.setText("Establish Connection");
 		}
-		_singleton.setContentView(R.layout.main);
+		_singleton.runOnUiThread(new Runnable() {
+			
+	    public void run() {
+	    	_singleton.setContentView(R.layout.main);
+	            }
+	    });
+		
 	}
 
 	public static void initializeLocalFileView() {
@@ -135,7 +142,12 @@ public class RemoteSyncActivity extends Activity implements OnClickListener {
 	{
 		if( listing != null )
 		{
-			remoteDirectoryView.setAdapter(new ArrayAdapter<String>(this,R.layout.remotesimple,listing));
+			adapter = new ArrayAdapter<String>(this,R.layout.remotesimple,listing);
+			runOnUiThread(new Runnable(){
+				public void run(){
+					remoteDirectoryView.setAdapter(adapter);
+				}
+			});
 		}		
 	}
 	
@@ -229,6 +241,7 @@ public class RemoteSyncActivity extends Activity implements OnClickListener {
     	if( pathstr.endsWith("/") ){
     		populateRDV(new String[0]);
     		ACommandExecutor.requestDirectoryListing(pathstr);
+    		_singleton.remotePathLabel.setText(pathstr);
     	}else{
     		Log.v(tag,"caught click on directory listing");
     		registerForContextMenu(v);
@@ -250,6 +263,11 @@ public class RemoteSyncActivity extends Activity implements OnClickListener {
 	                                ContextMenuInfo menuInfo) {
 	    super.onCreateContextMenu(menu, v, menuInfo);
 	    MenuInflater inflater = getMenuInflater();
-	    inflater.inflate(R.menu.browser_contextmenu, menu);
+	    if( lastClickedIsLocal )
+	    {
+	    	inflater.inflate(R.menu.browser_contextmenu, menu);
+	    }else{
+	    	inflater.inflate(R.menu.remotebrowser_contextmenu, menu);
+	    }
 	}
 }

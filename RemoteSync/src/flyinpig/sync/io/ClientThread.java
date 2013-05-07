@@ -82,8 +82,11 @@ public class ClientThread extends Thread {
 					}
 					
 				} catch (IOException e) {
-					stayConnected = false;
-					RemoteSyncActivity.connectionLost("Connection Lost");
+					if( mClientSocket.isClosed())
+					{
+						stayConnected = false;
+						RemoteSyncActivity.connectionLost("Connection Lost");
+					}
 				} catch (ParsingException e){
 					CommandResponse parsefailure = new CommandResponse(CommandResponse.COMMAND_TYPE_FAILURE);
 					parsefailure.addParameter("Command parsing failure.");

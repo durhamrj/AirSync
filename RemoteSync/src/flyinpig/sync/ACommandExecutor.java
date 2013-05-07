@@ -113,8 +113,10 @@ public class ACommandExecutor {
 							dirmsg.addParameter(f.getPath());
 						}
 					}
+					return dirmsg;
 				}
 			}
+			break;
 		case CommandResponse.COMMAND_TYPE_REQUEST_FILE:
 			if( response )
 			{

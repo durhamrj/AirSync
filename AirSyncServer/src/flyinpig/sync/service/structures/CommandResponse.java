@@ -52,7 +52,6 @@ public class CommandResponse {
 		{
 			chksum += raw_message[i]; 
 		}
-		System.out.println("Checksum value = " + chksum);
 		
 		ByteBuffer buf = ByteBuffer.wrap(raw_message);
 		length = buf.getInt(0);
@@ -65,19 +64,16 @@ public class CommandResponse {
 		while( paramslength < length )
 		{
 			int paramlength = buf.getInt(index);
-			System.out.println("Start index = " + index);
-			System.out.println("Paramlength = " + paramlength);
+//			System.out.println("Paramlength = " + paramlength);
 			index+= 4;
 			String str = new String(raw_message, index, paramlength);
 			parameters.add(str);
-			System.out.println("[" + parameters.size() + "] - " + str );
+//			System.out.println("[" + parameters.size() + "] - " + str );
 			paramslength += paramlength;
 			index += paramlength;
 		}
 		
 		int read_chksum = buf.getInt(index);
-		System.out.println(index);
-		System.out.println("Read checksum value = " + read_chksum);
 		if( read_chksum != chksum )
 		{
 			throw new ParsingException("Checksums did not match");
@@ -98,7 +94,6 @@ public class CommandResponse {
 	{
 		// 24 is the combined size of the header values and checksum
 		int command_size = 16 + length + (4 * parameters.size());
-		System.out.println( "Allocating byte array of size: " + command_size );
 		ByteBuffer buf = ByteBuffer.allocate(command_size);
 		byte[] raw_message = null;
 		
@@ -121,7 +116,6 @@ public class CommandResponse {
 		{
 			chksum += raw_message[i]; 
 		}
-		System.out.println("Checksum value = " + chksum);
 		buf.putInt(chksum);
 		raw_message = buf.array();
 		

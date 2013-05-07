@@ -2,6 +2,7 @@ package flyinpig.sync.service;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.EOFException;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -64,23 +65,31 @@ public class CommandHandler extends Thread {
 			while( sock.isConnected() && die == false )
 			{
 				// continuously read new messages
-				System.out.println("Reached normal read while loop");
-				
-				int messageLength = dis.readInt();
-				byte[] message = new byte[messageLength];
-				if( dis.read(message) == messageLength) 
-				{
-					try{
-						CommandResponse response = CommandExecutor.execute(new CommandResponse(message), this);
-						if( response != null )
-						{
-							send(response);
+//				System.out.println("Reached normal read while loop");
+				try{
+					int messageLength = dis.readInt();
+					byte[] message = new byte[messageLength];
+					int numread;
+					if( (numread = dis.read(message)) == messageLength) 
+					{
+						try{
+							CommandResponse response = CommandExecutor.execute(new CommandResponse(message), this);
+							if( response != null )
+							{
+								send(response);
+							}
+						}catch (ParsingException e){
+							CommandResponse parsefailure = new CommandResponse(CommandResponse.COMMAND_TYPE_FAILURE);
+							parsefailure.addParameter("Command parsing failure.");
+							System.err.println(e.getMessage());
 						}
-					}catch (ParsingException e){
-						CommandResponse parsefailure = new CommandResponse(CommandResponse.COMMAND_TYPE_FAILURE);
-						parsefailure.addParameter("Command parsing failure.");
-						System.err.println(e.getMessage());
+					}else{
+						System.out.println("Expected " + messageLength + " but only read " + numread);
 					}
+				}catch(EOFException e){
+					Main.connectionLost(this,"Connection ended prematurely.");
+					die = true;
+					break;
 				}
 			}
 			
@@ -89,7 +98,8 @@ public class CommandHandler extends Thread {
 			e.printStackTrace();
 			return;
 		}
-			
+		
+		Main.deregister(this);
 		if( die == true )
 		{
 			if( sock != null )
@@ -106,7 +116,14 @@ public class CommandHandler extends Thread {
 	public void send( CommandResponse cr )
 	{
 		byte[] message = cr.toByteArray();
-		
+		if( dos == null )
+		{
+			try {
+				dos = new DataOutputStream(sock.getOutputStream());
+			} catch (IOException e) {
+				Main.connectionLost(this, "Connection lost.");
+			}
+		}
 		try {
 			dos.writeInt(message.length);
 			dos.write(message);
